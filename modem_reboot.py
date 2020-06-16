@@ -59,8 +59,10 @@ class SurfboardHNAP:
         r = self.s.post(url, headers=headers, cookies=cookies, json=payload)
         return r
 
-    def login(self, host, password):
+    def login(self, host, password, noverify):
         self.host = host
+        if noverify:
+            self.s.verify = False
         r = self._login_request(host)
         lrdata = json.loads(r.text)['LoginResponse']
         cookie_id = lrdata['Cookie']
@@ -160,6 +162,8 @@ def get_arguments():
             help='Admin password (Default: motorola)')
     parser.add_argument('--dryrun', '-d', action='store_true', 
                         help="Logs in but doesn't reboot")
+    parser.add_argument('--noverify', '-n', action='store_true', 
+                        help="Disable certificate verification")
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -168,7 +172,7 @@ if __name__ == '__main__':
     password = args.password
 
     h = SurfboardHNAP()
-    r = h.login(host, password)
+    r = h.login(host, password, args.noverify)
     print('login: {}'.format(r))
     r = h.get_status()
     print('status: {}'.format(r))
